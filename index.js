@@ -1,8 +1,15 @@
 const express = require('express');
+
+/*  use a pure javascript database : nedb
+    https://github.com/louischatriot/nedb
+    chinese intro :https://www.w3cschool.cn/nedbintro/
+*/
+const nedb = require('nedb');
 const app = express();
 
 app.use(express.json());
 
+/*
 var $users = [
     { id: 1, name: 'Maruko' },
     { id: 2, name: 'Kenda' },
@@ -10,80 +17,95 @@ var $users = [
 ]
 
 
+
 app.get('/', function (req, res) {
     res.send('Hello World!');
 });
+*/
+
+//prepare database
+users=new nedb({
+    filename:'users.db',
+    autoload: true
+});
+
 app.get('/api/users', (req, res) => {
-    res.send($users)
+    //list all users
+    users.find({},($err,$data)=> res.send($data));
+    
 });
 app.get('/api/users/:id', (req, res) => {
-
-    const $user = $users.find(function (el) {
-        return el.id === parseInt(req.params.id);
-    })
-
-    if (!$user) {
-        res.status(404).send('此不到此用戶的id');
-        return;
-    }
+    
+    let $user = users.find({_id:req.params.id});
     res.send($user);
 });
 
 app.post('/api/users', (req, res) => {
+    
+    let $user=req.body;
 
-    if (!req.body.name || req.body.name.length<3) {
-        res.status(400).send('Name是必填，並且至少3個字元');
-        return;
-    }
-
-    const $user = {
-        id: $users.length + 1,
-        name: req.body.name
-    };
-    $users.push($user);
-    res.send($user);
+    $user._id=Date.now().toString(36), //dirty trick : use time(ms) with base36 endoding
+    
+    users.insert($user,($err)=>{
+        if ($err){
+            res.send({
+                ok:false,
+                err:$err
+            });
+        }else{
+            res.send({
+                id:$user._id,
+                ok:true
+            });
+            
+        }
+    });
+    
 
 });
 
 app.put('/api/users/:id', (req, res) => {
-    //先找到對應的id
-    const $user = $users.find(function (el) {
-        return el.id === parseInt(req.params.id);
-    })
-    // not existing
-    if (!$user) {
-        res.status(404).send('此不到此用戶的id');
-        return;
-    }
-
-    if (!req.body.name || req.body.name.length < 3) {
-        res.status(400).send('Name是必填，並且至少3個字元');
-        return;
-    }
-
-    $user.name=req.body.name;
-    res.send($user);
+    let $id=req.params.id;
+    let $data=req.body;
+    user.update({_id:$id},{$set:$data},($err,$numReplaced)=>{
+        if ($err){
+            res.send({
+                ok:false,
+                err:$err
+            });
+        }else{
+            res.send({
+                id:$id,
+                numReplaced:$numReplaced,
+                ok:true
+            });
+            
+        }
+    });
+    
 });
 
 app.delete('/api/users/:id',(req,res)=>{
-    const $user = $users.find(function (el) {
-        return el.id === parseInt(req.params.id);
-    })
-    // not existing
-    if (!$user) {
-        res.status(404).send('此不到此用戶的id');
-        return;
-    }
-
-    //delete
-    const index=$users.indexOf($user);
-    $users.splice(index,1);
-
-    res.send($users);
-
+    let $id=req.params.id;
+    users.remove({_id:$id},($err,$numReplaced)=>{
+        if ($err){
+            res.send({
+                ok:false,
+                err:$err
+            });
+        }else{
+            res.send({
+                id:$id,
+                ok:true
+            });
+            
+        }
+    });
+    
 });
+app.use(express.static('public'));
 
-const $port = process.env.PORT || 3000;
+const $port = process.env.PORT || 8033;
 app.listen($port, function () {
     console.log(`Example app listening on ${$port}`);
 });
