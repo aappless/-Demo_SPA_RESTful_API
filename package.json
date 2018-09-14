@@ -1,5 +1,5 @@
 {
-  "name": "expressjs",
+  "name": "demospa",
   "version": "1.0.0",
   "description": "express practice",
   "main": "index.js",
@@ -10,6 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.16.3",
-    "ndb": "^1.0.24"
+    "nedb": "^1.8.0"
   }
 }

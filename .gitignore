@@ -1,2 +1,5 @@
-/node_modules
 /desktop.ini
+/node_modules
+package-lock.json
+.db
+.log
