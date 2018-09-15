@@ -7,6 +7,7 @@ Demo for RESTful API and Single Page Application
 
  - Frontend
 	 - jQuery : https://jquery.com/
+	 - Bootstrap : https://getbootstrap.com/docs/3.3/
  - Backend
 	 - Express : https://expressjs.com/zh-tw/
 	 - NeDB : https://github.com/louischatriot/nedb
